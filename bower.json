@@ -1,6 +1,6 @@
 {
-  "name": "socialightio-charts",
-  "version": "0.1.0",
+  "name": "d3-charts",
+  "version": "0.1.5",
   "main": "app/",
   "dependencies": {
     "angular": "~1.0.7",
