@@ -3,7 +3,7 @@
 angular.module('socCharts')
   .directive('columnchart', function () {
     return {
-      templateUrl: 'views/charts/bar.html',
+      templateUrl: _SocChartsConfig.path+'views/charts/bar.html',
       restrict: 'A',
       scope: {
 	  	'columnchart': '=',

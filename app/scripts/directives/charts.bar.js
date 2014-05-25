@@ -3,7 +3,7 @@
 angular.module('socCharts')
   .directive('barchart', function () {
     return {
-      templateUrl: 'views/charts/bar.html',
+      templateUrl: _SocChartsConfig.path+'views/charts/bar.html',
       restrict: 'A',
       scope: {
 	  	'barchart': '=',
@@ -19,8 +19,6 @@ angular.module('socCharts')
 		scope.$watch("options", function () { 
 			scope.update();
 		}, true);
-				  
-		scope.data = scope.barchart;
 		
 		scope.options = angular.extend({ 
 			label: "label",
@@ -41,6 +39,7 @@ angular.module('socCharts')
 			], 
 			height: 400,
 			legend: true,
+			chartLabel: false,
 			axis: {
 				x: {
 					show: true
@@ -59,16 +58,18 @@ angular.module('socCharts')
 		
 		scope.create = function () { 
 
+			if (!scope.barchart) { return false; }
+			
 		  	var self = this;
 		  
 			element.height(scope.options.height);
 	
 			var container = d3.selectAll(element);
 			
-			var margin = {top: 20, right: 0, bottom: 30, left: 0};
+			var margin = {top: 20, right: 0, bottom: 20, left: 0};
 			
 			// Legend fix
-			if (scope.options.axis.y.show) { margin.left += 100; };
+			if (scope.options.axis.y.show) { margin.left += scope.options.axis.y.width || 100; };
 			
 			var width = scope.options.width || element.width();
 			
@@ -98,37 +99,47 @@ angular.module('socCharts')
 			  .append("g")
 			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 			
-		  var data = [];
+		  var data = angular.copy(scope.barchart);
+		  var y0 = 0;
 		  		  			
-		  scope.barchart.forEach(function(d, i) {
+		  data.forEach(function(d, i) {
+		  
 		    var y0 = 0;
 			data[i] = {
-				label: d.label
+				label: typeof(scope.options.axis.y.label) == "function" ? scope.options.axis.y.label(d) : d[scope.options.axis.y.label]
 			};
 			
 			if (scope.options.stack) { 
 			    scope.options.stack.forEach(function (v) { 
 			    	data[i].values = data[i].values || [];
 			    	
-				    if (d[v.key]) { 
+				    if (typeof(v.key) == "function") { 
 				    	var value = {
 					    	label: v.label,
 					    	color: v.color
 				    	};
 				    	value.y0 = y0;
-				    	value.y1 = y0 += +d[v.key];
+				    	value.y1 = y0 += v.key(d);
 					    data[i].values.push(value);
+				    } else if (d[v.key]) { 
+				    	var value = {
+					    	label: v.label,
+					    	color: v.color
+				    	};
+				    	value.y0 = y0;
+				    	value.y1 = y0 += d[v.key];
+					    data[i].values.push(value);					    
 				    }
 			    });
 		    } else { 
 			    data[i].values = [{
-				    label: data.label,
+				    label: "test",
 				    color: data.color || "black",
 				    y0: 0,
 				    y1: d.value
 			    }];
 		    }
-		    
+			
 		    data[i].total = data[i].values[data[i].values.length - 1].y1;
 		    
 		  });
@@ -143,7 +154,7 @@ angular.module('socCharts')
 		  	});
 		  }
 		  
-		  y.domain(data.map(function(d) { return d.label; }));
+		  y.domain(data.map(function(d) { return d.label; }));	
 		  x.domain([d3.max(data, function(d) { return d.total; }), 0]);
 		  
 		  if (scope.options.axis.x.show) {
@@ -154,15 +165,17 @@ angular.module('socCharts')
 		 }
 		 
 		 if (scope.options.axis.y.show) { 
-			 svg.append("g")
+			 var yaxis = svg.append("g")
 			      .attr("class", "y axis")
 			      .call(yAxis)
 			    .append("text")
 			      .attr("transform", "rotate(-90)")
 			      .attr("y", 6)
 			      .attr("dy", ".71em")
-			      .style("text-anchor", "end")
-			      .text(scope.options.axis.y.label);
+			      .style("text-anchor", "end");
+			      if (scope.options.axis.y.showLabel) { 
+			      	yaxis.text(scope.options.axis.y.label("Label"));
+			      }
 		 }
 		
 		  var bar = svg.selectAll(".state")

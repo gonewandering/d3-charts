@@ -1,31 +1,32 @@
-body {
-  padding: 0;
-  margin: 0; }
-
-.ng-hide-add {
+.animate-fade.ng-hide-add {
   opacity: 1.0;
   display: block !important;
   transition: opacity .5s; }
 
-.ng-hide-add-active {
+.animate-fade.ng-hide-add-active {
   opacity: 0; }
 
-.ng-hide-remove {
+.animate-fade.ng-hide-remove {
   opacity: 0;
   display: block !important;
   transition: opacity .5s; }
 
-.ng-hide-remove-active {
+.animate-fade.ng-hide-remove-active {
   opacity: 1; 
 }
 
-/*
+#histogram { 
+	position: relative;
+}
 .chart-loading { 
 	position: absolute;
 	text-align: center;
 	width: 100%;
+	top: 100px
 }
 
-
-*/
-
+.y.axis path, .x.axis path { 
+	fill: none;
+	stroke-width: 1px;
+	stroke: grey;
+}
